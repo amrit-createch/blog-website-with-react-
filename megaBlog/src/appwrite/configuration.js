@@ -104,7 +104,7 @@ try {
     return false
 }
 }
-async getFilePreview(fileId){
+ getFilePreview(fileId){
             try {
             if (!fileId) {
                 console.warn("No fileId provided to getFilePreview");
