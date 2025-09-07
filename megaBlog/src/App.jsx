@@ -5,7 +5,7 @@ import authservice from './appwrite/auth'
 import { login,logout } from './store/authSlice'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
-
+import { Outlet } from 'react-router-dom'
 function App() {
   const [loading,setLoading] = useState(true)
   const dispatch =useDispatch()
@@ -14,11 +14,16 @@ function App() {
   useEffect(()=>{
     authservice.getCurrentUser()
     .then((userdata)=>{
+      console.log('getCurrentUser returned:', userdata);
       if(userdata){
-        dispatch(login({userdata}))
+        dispatch(login({userData: userdata}))
       }else{
         dispatch(logout())
       }
+    })
+     .catch((error) => {
+        console.log('Auth error:', error); 
+      dispatch(logout())
     })
     .finally(()=>setLoading(false))
   },[])
@@ -28,7 +33,7 @@ function App() {
       <div className='w-full block'>
         <Header />
         <main>
-        {/* TODO:   <Outlet /> */}
+          <Outlet />
         </main>
         <Footer/>
       </div>

@@ -1,11 +1,19 @@
 import React,{useCallback} from 'react'
-import { set, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import {Button,Input,Select,RTE} from '../index'
 import appwriteService from '../../appwrite/configuration'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
-function PostForm({PostForm}) {
+function PostForm({post}) {
+
+    const authState = useSelector(state => state.auth)
+    const userData = useSelector(state => state.auth.userData)
+    
+    console.log('Full auth state:', authState)
+    console.log('User data:', userData)
+    console.log('User ID:', userData?.$id)
+
     const {register,handleSubmit,watch,setValue,control,getValues} = useForm({
         defaultValues:{
             title: post?.title || '',
@@ -17,16 +25,15 @@ function PostForm({PostForm}) {
         }
     })
     const navigate = useNavigate()
-    const userData = useSelector(state => state.user.userData)
     const submit = async (data) =>{
         if(post){
-           const file = data.image[0] ? appWriteService.uploadFile(data.image[0]) : null
+           const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null
 
            if(file){
-            appWriteService.deleteFile(post.featuredImage)
+            appwriteService.deleteFile(post.featuredImage)
            }
            
-           const dbPost = await appWriteService.updatePost(post.$id, {
+           const dbPost = await appwriteService.updatePost(post.$id, {
                 ...data,
                 featuredImage:file?file.$id: undefined,
                  })
@@ -35,11 +42,17 @@ function PostForm({PostForm}) {
                     navigate(`/post/${dbPost.$id}`)
                 }
         }else{
-            const file = await appWriteService.uploadFile(data.image[0]);
+            const file = await appwriteService.uploadFile(data.image[0]);
             if(file){
                const fileId = file.$id
                data.featuredImage = fileId
-               const dbPost = await appWriteService.createPost({
+
+                  if(!userData || !userData.$id){
+               console.error('User data not available');
+               return;
+             }
+
+               const dbPost = await appwriteService.createPost({
                 ...data,
                 userId:userData.$id
                })
@@ -51,7 +64,7 @@ function PostForm({PostForm}) {
     }
 
     const slugTransform = useCallback ((value) => {
-        if(value && typeof value === string)
+        if(value && typeof value === 'string')
             return value
             .trim()
             .toLowerCase()
@@ -64,7 +77,7 @@ function PostForm({PostForm}) {
     React.useEffect(()=>{
         const subscription = watch((value,{name})=>{
             if(name === 'title'){
-                setValue ('slug', slugTransform(value.title,{shouldValidate: true}))
+                setValue ('slug', slugTransform(value.title),{shouldValidate: true})
             }
         })
         return () => {

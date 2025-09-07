@@ -15,7 +15,8 @@ constructor(){
 async createPost({title,slug,content,featuredImage,status,userId}){
     try {
         return await this.databases.createDocument(config.appwriteDatabaseId,
-            config.appwriteCollectionId,
+
+             config.appwriteCollectionId,
             slug,
             {
                 title,
@@ -46,7 +47,7 @@ try {
     console.log("appwrite service :: updatePost :: error", error);
 }
 }
-async deletePost({slug}){
+async deletePost(slug){
     try {
         await this.databases.deleteDocument(config.appwriteDatabaseId, 
             config.appwriteCollectionId,
@@ -57,11 +58,15 @@ async deletePost({slug}){
         return false
     }
 }
-async getPost({slug}){
+async getPost(slug){
     try {
-        return await this.databases.getPost(config.appwriteDatabaseId,config.appwriteCollectionId,slug)
+         if (!slug) {
+            throw new Error("Slug parameter is required");
+        }
+        return await this.databases.getDocument(config.appwriteDatabaseId,config.appwriteCollectionId,slug)
     } catch (error) {
         console.log("appwrite service :: getPost :: error", error);
+        return null;
     }
 
 }
@@ -100,7 +105,23 @@ try {
 }
 }
 async getFilePreview(fileId){
-    return this.bucket.getFilePreview(config.appwriteBucketId,fileId)
+            try {
+            if (!fileId) {
+                console.warn("No fileId provided to getFilePreview");
+                return null;
+            }
+            return this.bucket.getFilePreview(
+                config.appwriteBucketId,
+                fileId,
+                2000, // width
+                2000, // height
+                "center", // gravity
+                100 // quality
+            ).toString();
+        } catch (error) {
+            console.log("appwrite service :: getFilePreview :: error", error);
+            return null;
+        }
 }
 }
 const service = new Service()

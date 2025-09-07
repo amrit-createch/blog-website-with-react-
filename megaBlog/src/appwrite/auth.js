@@ -47,11 +47,12 @@ export class AuthService{
     }
     async getCurrentUser(){
         try {
-            await this.account.get()
+            return await this.account.get();
         } catch (error) {
-             console.log("apperite service :: getCurrentUser :: error", error);
+             console.log("appwrite service :: getCurrentUser :: error", error);
+               return null
         }
-        return null
+      
     }
     async logout(){
         try {

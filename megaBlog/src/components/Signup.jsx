@@ -5,11 +5,12 @@ import {login} from '../store/authSlice'
 import {Button,Logo,Input} from './index' 
 import { useDispatch } from 'react-redux'
 import { useForm } from 'react-hook-form'
+
 function Signup() {
     const navigate = useNavigate()
     const [error,setError] = useState("")
     const dispatch = useDispatch()
-    const {register,useRegister} = useForm()
+    const {register,handleSubmit} = useForm()
     const create = async (data) => {
         setError("")
         try {
